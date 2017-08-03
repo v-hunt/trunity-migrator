@@ -8,7 +8,7 @@ setup(
     install_requires=[
         'requests',
         'beautifulsoup4',
-        'git+git://github.com/v-hunt/trunity-3-api-client.git',
+        'trunity-3-client',
       ],
     url='',
     license='MIT',
