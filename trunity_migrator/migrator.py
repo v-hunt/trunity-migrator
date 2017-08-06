@@ -6,6 +6,8 @@ from trunity_3_client import (
     TopicsClient,
     ContentsClient,
     ContentType,
+    SitesClient,
+    SiteType,
 )
 
 
@@ -25,16 +27,36 @@ class Migrator(object):
             trunity_2_login, trunity_2_password
         )
 
-        trunity_3_session = initialize_session_from_creds(
+        self._trunity_3_session = initialize_session_from_creds(
             trunity_3_login, trunity_3_password
         )
-        self._topics_client = TopicsClient(trunity_3_session)
-        self._contents_client = ContentsClient(trunity_3_session)
+        self._topics_client = TopicsClient(self._trunity_3_session)
+        self._contents_client = ContentsClient(self._trunity_3_session)
 
-        self._trunity_3_side_id = settings.TRUNITY_3_SITE_ID
+        self._trunity_3_side_id = None
 
         self._trunity_2_root_topic_id, self._trunity_2_site_id = None, None
         self._cur_topic_id = None
+
+    def _create_new_site(self, title: str):
+        """
+        Create new book (site) on Trunity 3 and return site_id.
+        :param title:
+        :return: site_id
+        """
+        print("Creating new book: {}".format(title), end='')
+
+        sites_client = SitesClient(self._trunity_3_session)
+        site_id = sites_client.list.post(
+            name=title,
+            site_type=SiteType.TEXTBOOK,
+            description=''
+        )
+
+        # TODO: make description argument optional.
+
+        print('\t\t[SUCCESS!]')
+        return site_id
 
     def _get_trunity_2_site_info(self, site_name):
         """
@@ -55,7 +77,7 @@ class Migrator(object):
         print("Uploading content: {}".format(title), end='')
 
         self._contents_client.list.post(
-            site_id=settings.TRUNITY_3_SITE_ID,
+            site_id=self._trunity_3_side_id,
             content_title=title,
             content_type=ContentType.ARTICLE,
             text=body,
@@ -134,6 +156,9 @@ class Migrator(object):
         # self._cur_topic_id = self._upper_dir(self._cur_topic_id)
 
     def migrate_book(self, book_title, new_book_title):
+
+        self._trunity_3_side_id = self._create_new_site(new_book_title)
+
         self._trunity_2_root_topic_id, self._trunity_2_site_id = \
             self._get_trunity_2_site_info(book_title)
 
