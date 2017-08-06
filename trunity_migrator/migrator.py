@@ -18,6 +18,13 @@ class RootTopicIdError(IOError):
     pass
 
 
+class Vertex(object):
+
+    def __init__(self, uploaded_topic_id, join):
+        self.uploaded_topic_id = uploaded_topic_id
+        self.join = join
+
+
 class Migrator(object):
 
     def __init__(self, trunity_2_login, trunity_2_password,
@@ -37,6 +44,8 @@ class Migrator(object):
 
         self._trunity_2_root_topic_id, self._trunity_2_site_id = None, None
         self._cur_topic_id = None
+
+        self._queue = []
 
     def _create_new_site(self, title: str):
         """
@@ -127,33 +136,39 @@ class Migrator(object):
         else:
             return False
 
-    def _get_upper_topic_id(self, topic_id):
-        pass
+    def _update_queue_by_joins(self, topic_id, topic_joins):
+        queue = [
+            Vertex(uploaded_topic_id=topic_id, join=join)
+            for join in topic_joins
+        ]
+        self._queue.extend(queue)
 
-    def _upload_topic_joins(self, topic_joins):
+    def _upload_topic_joins(self):
 
-        for join in topic_joins:
-            if self._is_join_is_content(join):
+        while self._queue:
+            vertex = self._queue.pop(0)
+
+            if self._is_join_is_content(vertex.join):
 
                 self.upload_content(
-                    title=join['title'],
-                    body=join['body'],
-                    topic_id=self._cur_topic_id
+                    title=vertex.join['title'],
+                    body=vertex.join['body'],
+                    topic_id=vertex.uploaded_topic_id
                 )
 
-            elif self._is_join_is_chapter(join):
+            elif self._is_join_is_chapter(vertex.join):
 
-                self._cur_topic_id = self._create_chapter(
-                    title=join['title'],
-                    topic_id=self._cur_topic_id,
+                new_topic_id = self._create_chapter(
+                    title=vertex.join['title'],
+                    topic_id=vertex.uploaded_topic_id,
                     short_name=None,  # TODO: add short_name
                 )
 
-                topic_joins = self._get_topic_joins(join['_id'])
-                # recursion call:
-                self._upload_topic_joins(topic_joins)
-
-        # self._cur_topic_id = self._upper_dir(self._cur_topic_id)
+                topic_joins = self._get_topic_joins(vertex.join['_id'])
+                self._update_queue_by_joins(
+                    topic_id=new_topic_id,
+                    topic_joins=topic_joins,
+                )
 
     def migrate_book(self, book_title, new_book_title):
 
@@ -164,7 +179,11 @@ class Migrator(object):
 
         root_topic_joins = self._get_topic_joins(self._trunity_2_root_topic_id)
 
-        self._upload_topic_joins(root_topic_joins)
+        self._update_queue_by_joins(
+            topic_id=None,
+            topic_joins=root_topic_joins
+        )
+        self._upload_topic_joins()
 
 
 if __name__ == '__main__':
