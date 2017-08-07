@@ -46,7 +46,7 @@ TRUNITY_2_API_ENDPOINT = "http://api.trunity.net/v1/"
 # TRUNITY_2_API_ENDPOINT = "http://api2.trunity.net/v1/"
 
 
-TRUNITY_2_APP
+TRUNITY_2_APP_CODE = ''
 
 
 # -------------- Fixers -----------------
