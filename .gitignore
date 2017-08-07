@@ -98,5 +98,4 @@ ENV/
 # PyCharm
 .idea/
 
-trunity_migrator/settings.py
 
