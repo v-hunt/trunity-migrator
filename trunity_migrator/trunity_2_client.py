@@ -3,8 +3,10 @@ from collections import namedtuple
 
 import requests
 
-from trunity_migrator.settings import TRUNITY_2_API_ENDPOINT
-from trunity_migrator.settings import TRUNITY_2_APP_CODE
+
+TRUNITY_2_API_ENDPOINT = "http://api.trunity.net/v1/"
+# TRUNITY_2_API_ENDPOINT = "http://api2.trunity.net/v1/"
+TRUNITY_2_APP_CODE = 'afb7a0a03ef25600d5d88d7df33884d0'
 
 
 HEADERS = {

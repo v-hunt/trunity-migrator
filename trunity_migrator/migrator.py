@@ -1,5 +1,7 @@
 from trunity_migrator import settings
 from trunity_migrator.trunity_2_client import Client as Trunity2Client
+from trunity_migrator.fixers import *
+from trunity_migrator.html_fixer import HTMLFixer
 
 from trunity_3_client import (
     initialize_session_from_creds,
@@ -28,7 +30,8 @@ class Vertex(object):
 class Migrator(object):
 
     def __init__(self, trunity_2_login, trunity_2_password,
-                 trunity_3_login, trunity_3_password):
+                 trunity_3_login, trunity_3_password,
+                 html_fixer: HTMLFixer=None):
 
         self._trunity_2_client = Trunity2Client(
             trunity_2_login, trunity_2_password
@@ -46,6 +49,8 @@ class Migrator(object):
         self._cur_topic_id = None
 
         self._queue = []
+
+        self._html_fixer = html_fixer
 
     def _create_new_site(self, title: str):
         """
@@ -84,6 +89,9 @@ class Migrator(object):
 
     def upload_content(self, title, body, topic_id=None):
         print("Uploading content: {}".format(title), end='')
+
+        if self._html_fixer:
+            body = self._html_fixer.apply(body)
 
         self._contents_client.list.post(
             site_id=self._trunity_3_side_id,

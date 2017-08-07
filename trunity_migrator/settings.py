@@ -48,9 +48,18 @@ TRUNITY_2_APP_CODE = 'your-app-code'
 ###############################################################################
 #                           FIXERS SETTINGS
 ###############################################################################
+FIXERS_ALLOWED = [
+    'fix_img_src',
+    'fix_table_width',
+]
 
 
-# this will be added to all 'src' urls
-STATIC_URL = 'http://www.trunity.net'
-IMG_BASE_URL = 'http://www.trunity.net'
+FIX_IMG_SRC = {
+    "base_url": "http://www.trunity.net",
+}
+
+FIX_TABLE_WIDTH = {
+    "old_widths": ["766", "770"],
+    "new_widths": ["100%", "100%"],
+}
 
