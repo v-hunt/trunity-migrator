@@ -39,3 +39,20 @@ trunity-migrator /path/to/settings.py
 
 Pay a special attention that `/path/to/settings.py` should be a absolute path.
 Otherwise the script won't work.
+
+
+### HTML Fixers
+
+You can apply html fixers to fix html issues. Each of fixers
+mentioned in settings will be applied to each article (or another content
+type).
+
+See `FIXERS SETTINGS` section in example settings file.
+
+**Implemented fixers:**
+
+* `fix_img_src` --
+Search for all \<img\> tags and add the scheme part for src if src is
+    not the absolute url. Required parameters: `base_url`
+
+* `fix_table_width` -- search for tables and change  'width' attribute
