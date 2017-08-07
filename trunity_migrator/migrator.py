@@ -1,5 +1,5 @@
 from trunity_migrator import settings
-from trunity_2_client import Client as Trunity2Client
+from trunity_migrator.trunity_2_client import Client as Trunity2Client
 
 from trunity_3_client import (
     initialize_session_from_creds,
