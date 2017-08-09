@@ -1,8 +1,6 @@
-#####################################################
-#                  EXAMPLE OF CONF FILE
-# Attention!! The following settings must be filled
-# before running this script!
-#####################################################
+##############################################################################
+#                           EXAMPLE OF CONF FILE
+##############################################################################
 
 # set here your user name and password:
 TRUNITY_2_LOGIN = "my-trunity-2-login"
@@ -34,15 +32,6 @@ CONTENT_TYPES = [
     # "exercise",
     # "teachingunit",
 ]
-
-
-
-
-TRUNITY_2_API_ENDPOINT = "http://api.trunity.net/v1/"
-# TRUNITY_2_API_ENDPOINT = "http://api2.trunity.net/v1/"
-
-
-TRUNITY_2_APP_CODE = 'your-app-code'
 
 
 ###############################################################################
