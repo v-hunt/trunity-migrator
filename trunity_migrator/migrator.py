@@ -2,6 +2,7 @@ from trunity_migrator import settings
 from trunity_migrator.trunity_2_client import Client as Trunity2Client
 from trunity_migrator.fixers import *
 from trunity_migrator.html_fixer import HTMLFixer
+from trunity_migrator.glossary import Glossary
 
 from trunity_3_client import (
     initialize_session_from_creds,
@@ -53,6 +54,11 @@ class Migrator(object):
 
         self._html_fixer = html_fixer
 
+        self._glossary = Glossary(
+            self._trunity_3_side_id,
+            self._trunity_3_session
+        )
+
     def _create_new_site(self, title: str):
         """
         Create new book (site) on Trunity 3 and return site_id.
@@ -93,6 +99,9 @@ class Migrator(object):
 
         if self._html_fixer:
             body = self._html_fixer.apply(body)
+
+        # upload glossary terms:
+        body = self._glossary.fix_tags(body)
 
         self._contents_client.list.post(
             site_id=self._trunity_3_side_id,
