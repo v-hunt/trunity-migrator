@@ -27,11 +27,10 @@ migrator = Migrator(
         trunity_2_password=settings.TRUNITY_2_PASSWORD,
         trunity_3_login=settings.TRUNITY_3_LOGIN,
         trunity_3_password=settings.TRUNITY_3_PASSWORD,
+        t2_book_title=settings.TRUNITY_2_BOOK_NAME,
+        t3_book_title=settings.TRUNITY_3_BOOK_NAME,
         html_fixer=html_fixer,
     )
 
 
-migrator.migrate_book(
-        settings.TRUNITY_2_BOOK_NAME,
-        settings.TRUNITY_3_BOOK_NAME
-    )
+migrator.migrate_book()

@@ -31,6 +31,7 @@ class Migrator(object):
 
     def __init__(self, trunity_2_login, trunity_2_password,
                  trunity_3_login, trunity_3_password,
+                 t2_book_title, t3_book_title,
                  html_fixer: HTMLFixer=None):
 
         self._trunity_2_client = Trunity2Client(
@@ -43,10 +44,10 @@ class Migrator(object):
         self._topics_client = TopicsClient(self._trunity_3_session)
         self._contents_client = ContentsClient(self._trunity_3_session)
 
-        self._trunity_3_side_id = None
+        self._trunity_3_side_id = self._create_new_site(t3_book_title)
 
-        self._trunity_2_root_topic_id, self._trunity_2_site_id = None, None
-        self._cur_topic_id = None
+        self._trunity_2_root_topic_id, self._trunity_2_site_id = \
+            self._get_trunity_2_site_info(t2_book_title)
 
         self._queue = []
 
@@ -178,13 +179,7 @@ class Migrator(object):
                     topic_joins=topic_joins,
                 )
 
-    def migrate_book(self, book_title, new_book_title):
-
-        self._trunity_3_side_id = self._create_new_site(new_book_title)
-
-        self._trunity_2_root_topic_id, self._trunity_2_site_id = \
-            self._get_trunity_2_site_info(book_title)
-
+    def migrate_book(self):
         root_topic_joins = self._get_topic_joins(self._trunity_2_root_topic_id)
 
         self._update_queue_by_joins(
@@ -197,16 +192,13 @@ class Migrator(object):
 if __name__ == '__main__':
 
     migrator = Migrator(
-        trunity_2_login=settings.TRUNITY_2_LOGIN,
-        trunity_2_password=settings.TRUNITY_2_PASSWORD,
-        trunity_3_login=settings.TRUNITY_3_LOGIN,
-        trunity_3_password=settings.TRUNITY_3_PASSWORD,
+        trunity_2_login='',
+        trunity_2_password='',
+        trunity_3_login='',
+        trunity_3_password='',
+        t2_book_title='Integrating Concepts in Biology',
+        t3_book_title='Integrating Concepts in Biology v19'
     )
 
-    # print(migrator._trunity_2_root_topic_id)
-
-    migrator.migrate_book(
-        settings.TRUNITY_2_BOOK_NAME,
-        settings.TRUNITY_3_BOOK_NAME
-    )
+    migrator.migrate_book()
 
