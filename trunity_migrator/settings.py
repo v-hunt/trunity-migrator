@@ -37,6 +37,8 @@ CONTENT_TYPES = [
 ###############################################################################
 #                           FIXERS SETTINGS
 ###############################################################################
+
+# You can comment out the fixer you don't want to use:
 FIXERS_ALLOWED = [
     'fix_img_src',
     'fix_table_width',
