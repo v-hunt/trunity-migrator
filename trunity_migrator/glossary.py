@@ -43,6 +43,10 @@ class Glossary(object):
         self._no_definition_terms.append(term)
         warnings.warn("Tag without definition!", MissingDefinitionWarning)
 
+    @staticmethod
+    def _fix_definition(definition):
+        return "<p>{}</p>".format(definition).strip()
+
     def _get_term(self, term_tag):
         term = term_tag['data-word']
         definition_tag = term_tag.find(
@@ -62,12 +66,13 @@ class Glossary(object):
             definition = MISSING_TERMS_DEFINITION_TEXT
             self._save_no_definition_term(term)
 
-        return term.strip(), definition.strip()
+        return term.strip(), self._fix_definition(definition)
 
     @staticmethod
     def _build_t3_term_tag(soup, term_id, term):
         new_tag = soup.new_tag("term")
         new_tag.string = term
+        new_tag["class"] = "was-loaded"
         new_tag["content-term-id"] = str(term_id)
         return new_tag
 
