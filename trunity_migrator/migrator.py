@@ -1,3 +1,5 @@
+import warnings
+
 from trunity_migrator import settings
 from trunity_migrator.trunity_2_client import Client as Trunity2Client
 from trunity_migrator.fixers import *
@@ -59,6 +61,15 @@ class Migrator(object):
             self._trunity_3_session
         )
 
+        self._no_definition_terms = []
+
+    def print_no_definition_terms(self):
+        print()
+        print("\t\t TERMS WITHOUT DEFINITIONS")
+
+        for term_list, article in self._no_definition_terms:
+            print(', '.join(term_list), ' in ', article)
+
     def _create_new_site(self, title: str):
         """
         Create new book (site) on Trunity 3 and return site_id.
@@ -97,7 +108,15 @@ class Migrator(object):
     def _upload_glosarry_terms(self, article_title, article_body):
         article_body = self._glossary.fix_tags(html=article_body)
 
+        # track glossary terms without definitions:
+        if self._glossary.no_definition_terms:
+            self._no_definition_terms.append([
+                self._glossary.no_definition_terms,
+                article_title
+            ])
+            del self._glossary.no_definition_terms
         return article_body
+
 
     def upload_content(self, title, body, topic_id=None):
         print("Uploading content: {}".format(title), end='')
@@ -200,6 +219,8 @@ class Migrator(object):
             topic_joins=root_topic_joins
         )
         self._upload_topic_joins()
+
+        self.print_no_definition_terms()
 
 
 if __name__ == '__main__':
