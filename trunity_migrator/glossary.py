@@ -1,5 +1,14 @@
+import warnings
+
 from trunity_3_client import TermsClient
 from bs4 import BeautifulSoup
+
+
+MISSING_TERMS_DEFINITION_TEXT = 'DEFINITION NOT FOUND'
+
+
+class MissingDefinitionWarning(Warning):
+    pass
 
 
 class Glossary(object):
@@ -7,6 +16,16 @@ class Glossary(object):
     def __init__(self, site_id, session):
         self._site_id = site_id
         self._client = TermsClient(session)
+
+        self._no_definition_terms = []
+
+    @property
+    def no_definition_terms(self):
+        return self._no_definition_terms
+
+    @no_definition_terms.deleter
+    def no_definition_terms(self):
+        self._no_definition_terms = []
 
     def _upload_term(self, term: str, definition: str) -> str:
         """
@@ -20,8 +39,11 @@ class Glossary(object):
             term_text=definition,
         )
 
-    @staticmethod
-    def _get_term(term_tag):
+    def _save_no_definition_term(self, term):
+        self._no_definition_terms.append(term)
+        warnings.warn("Tag without definition!", MissingDefinitionWarning)
+
+    def _get_term(self, term_tag):
         term = term_tag['data-word']
         definition_tag = term_tag.find(
             "span",
@@ -32,8 +54,13 @@ class Glossary(object):
         # this prevent the program from crushing:
         if definition_tag:
             definition = definition_tag.text
+            if not definition.strip():
+                definition = MISSING_TERMS_DEFINITION_TEXT
+                self._save_no_definition_term(term)
+
         else:
-            definition = ''
+            definition = MISSING_TERMS_DEFINITION_TEXT
+            self._save_no_definition_term(term)
 
         return term.strip(), definition.strip()
 
