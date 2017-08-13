@@ -68,7 +68,7 @@ class Migrator(object):
         print("\t\t TERMS WITHOUT DEFINITIONS")
 
         for term_list, article in self._no_definition_terms:
-            print(', '.join(term_list), ' in ', article)
+            print('--> ', ', '.join(term_list), ' in ', article)
 
     def _create_new_site(self, title: str):
         """
