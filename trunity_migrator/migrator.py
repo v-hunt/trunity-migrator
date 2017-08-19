@@ -146,6 +146,10 @@ class Migrator(object):
                         short_name=None, description=None):
         print('Creating new chapter: {}'.format(title), end='')
 
+        if description:  # apply html fixers:
+            if self._html_fixer:
+                description = self._html_fixer.apply(description)
+
         new_chapter_id = self._topics_client.list.post(
             site_id=self._trunity_3_side_id,
             name=title,
