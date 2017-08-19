@@ -117,7 +117,6 @@ class Migrator(object):
             del self._glossary.no_definition_terms
         return article_body
 
-
     def upload_content(self, title, body, topic_id=None):
         print("Uploading content: {}".format(title), end='')
 
@@ -136,7 +135,15 @@ class Migrator(object):
 
         print('\t\t[SUCCESS!]')
 
-    def _create_chapter(self, title, topic_id=None, short_name=None):
+    def _get_chapter_info(self, t2_chapter_id):
+        topic = self._trunity_2_client.get_a_topic(
+            site_id=self._trunity_2_site_id,
+            topic_id=t2_chapter_id,
+        )
+        return topic.get('shortName', None), topic.get('description', None)
+
+    def _create_chapter(self, title, topic_id=None,
+                        short_name=None, description=None):
         print('Creating new chapter: {}'.format(title), end='')
 
         new_chapter_id = self._topics_client.list.post(
@@ -144,6 +151,7 @@ class Migrator(object):
             name=title,
             topic_id=topic_id,
             short_name=short_name,
+            description=description,
         )
 
         print('\t\t[SUCCESS!]')
@@ -199,10 +207,15 @@ class Migrator(object):
 
             elif self._is_join_is_chapter(vertex.join):
 
+                short_name, description = self._get_chapter_info(
+                    vertex.join['_id']
+                )
+
                 new_topic_id = self._create_chapter(
                     title=vertex.join['title'],
                     topic_id=vertex.uploaded_topic_id,
-                    short_name=None,  # TODO: add short_name
+                    short_name=short_name,
+                    description=description,
                 )
 
                 topic_joins = self._get_topic_joins(vertex.join['_id'])
