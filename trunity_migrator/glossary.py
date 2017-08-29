@@ -19,6 +19,15 @@ class Glossary(object):
 
         self._no_definition_terms = []
 
+        self._uploaded_term_ids = []
+
+    @property
+    def uploaded_term_ids(self):
+        """
+        Return uploaded term ids for each html.
+        """
+        return self._uploaded_term_ids
+
     @property
     def no_definition_terms(self):
         return self._no_definition_terms
@@ -33,11 +42,13 @@ class Glossary(object):
         """
         print("Glossary term - {}: {}".format(term, definition))
 
-        return self._client.list.post(
+        term_id = self._client.list.post(
             site_id=self._site_id,
             term_title=term,
             term_text=definition,
         )
+
+        return self._client.tmp_content_term.post(term_id)
 
     def _save_no_definition_term(self, term):
         self._no_definition_terms.append(term)
@@ -87,10 +98,15 @@ class Glossary(object):
         """
         soup = BeautifulSoup(html,  "html.parser")
 
+        uploaded_term_ids = []
+
         for term_tag in soup.find_all("span", class_='trunity_glossary'):
             term, definition = self._get_term(term_tag)
             term_id = self._upload_term(term, definition)
+            uploaded_term_ids.append(term_id)
             t3_tag = self._build_t3_term_tag(soup, term_id, term)
             term_tag.replace_with(t3_tag)
+
+        self._uploaded_term_ids = uploaded_term_ids
 
         return soup.decode()

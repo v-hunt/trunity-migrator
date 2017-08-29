@@ -13,6 +13,7 @@ from trunity_3_client import (
     ContentType,
     SitesClient,
     SiteType,
+    TermsClient,
 )
 
 
@@ -60,6 +61,8 @@ class Migrator(object):
             self._trunity_3_side_id,
             self._trunity_3_session
         )
+
+        self._t3_terms_client = TermsClient(self._trunity_3_session)
 
         self._no_definition_terms = []
 
@@ -125,13 +128,23 @@ class Migrator(object):
 
         body = self._upload_glosarry_terms(title, body)
 
-        self._contents_client.list.post(
+        content_id = self._contents_client.list.post(
             site_id=self._trunity_3_side_id,
             content_title=title,
             content_type=ContentType.ARTICLE,
             text=body,
             topic_id=topic_id,
         )
+
+        # update tmp content terms:
+        uploaded_term_ids = self._glossary.uploaded_term_ids
+
+        for term_id in uploaded_term_ids:
+            self._t3_terms_client.update_tmp_content_term.put(
+                tmp_content_term_id=term_id,
+                content_id=content_id,
+                content_type='articles'
+            )
 
         print('\t\t[SUCCESS!]')
 
