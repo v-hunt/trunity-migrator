@@ -83,7 +83,6 @@ class Glossary(object):
     def _build_t3_term_tag(soup, term_id, term):
         new_tag = soup.new_tag("term")
         new_tag.string = term
-        new_tag["class"] = "was-loaded"
         new_tag["content-term-id"] = str(term_id)
         return new_tag
 
