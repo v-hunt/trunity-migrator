@@ -139,6 +139,7 @@ class Migrator(object):
         # update tmp content terms:
         uploaded_term_ids = self._glossary.uploaded_term_ids
 
+        # TODO: move this to Glossary class:
         for term_id in uploaded_term_ids:
             self._t3_terms_client.update_tmp_content_term.put(
                 tmp_content_term_id=term_id,
