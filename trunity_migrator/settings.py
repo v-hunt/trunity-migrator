@@ -42,8 +42,10 @@ CONTENT_TYPES = [
 FIXERS_ALLOWED = [
     'fix_img_src',
     'fix_table_width',
+    'fix_science_fusion_style',
 ]
 
+# Add fixers arguments:
 
 FIX_IMG_SRC = {
     "base_url": "http://www.trunity.net",
@@ -53,4 +55,9 @@ FIX_TABLE_WIDTH = {
     "old_widths": ["766", "770"],
     "new_widths": ["100%", "100%"],
 }
+
+
+# if a used fixer don't accept arguments, you must set the empty dict:
+FIX_SCIENCE_FUSION_STYLE = {}
+
 
