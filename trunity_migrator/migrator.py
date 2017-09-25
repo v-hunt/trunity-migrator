@@ -141,11 +141,14 @@ class Migrator(object):
 
         # TODO: move this to Glossary class:
         for term_id in uploaded_term_ids:
-            self._t3_terms_client.update_tmp_content_term.put(
-                tmp_content_term_id=term_id,
-                content_id=content_id,
-                content_type='articles'
-            )
+            try:
+                self._t3_terms_client.update_tmp_content_term.put(
+                    tmp_content_term_id=term_id,
+                    content_id=content_id,
+                    content_type='articles'
+                )
+            except KeyError:
+                print("[Warning] Trunity API can't accept temp content term!")
 
         print('\t\t[SUCCESS!]')
 
