@@ -21,7 +21,7 @@ class Glossary(object):
 
         # we track uploaded term ids to make "update content term"
         # (this is a weird behavior of Trunity 3 Terms API):
-        self._uploaded_term_ids = []
+        self._uploaded_term_ids = set()
 
         # This is the dict for keeping uploaded term definitions as keys and
         # uploaded term ids as values. We need this for do not upload the
@@ -29,7 +29,7 @@ class Glossary(object):
         self._uploaded_content_terms = {}
 
     @property
-    def uploaded_term_ids(self):
+    def uploaded_term_ids(self) -> set:
         """
         Return uploaded term ids for each html.
         """
@@ -114,12 +114,12 @@ class Glossary(object):
         """
         soup = BeautifulSoup(html,  "html.parser")
 
-        uploaded_term_ids = []
+        uploaded_term_ids = set()
 
         for term_tag in soup.find_all("span", class_='trunity_glossary'):
             term, definition = self._get_term(term_tag)
             term_id = self._upload_term(term, definition)
-            uploaded_term_ids.append(term_id)
+            uploaded_term_ids.add(term_id)
             t3_tag = self._build_t3_term_tag(soup, term_id, term)
             term_tag.replace_with(t3_tag)
 
