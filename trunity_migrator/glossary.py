@@ -19,6 +19,8 @@ class Glossary(object):
 
         self._no_definition_terms = []
 
+        # we track uploaded term ids to make "update content term"
+        # (this is a weird behavior of Trunity 3 Terms API):
         self._uploaded_term_ids = []
 
     @property
