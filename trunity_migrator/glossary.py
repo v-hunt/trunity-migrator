@@ -23,6 +23,11 @@ class Glossary(object):
         # (this is a weird behavior of Trunity 3 Terms API):
         self._uploaded_term_ids = []
 
+        # This is the dict for keeping uploaded term definitions as keys and
+        # uploaded term ids as values. We need this for do not upload the
+        # term twice:
+        self._uploaded_content_terms = {}
+
     @property
     def uploaded_term_ids(self):
         """
@@ -41,16 +46,26 @@ class Glossary(object):
     def _upload_term(self, term: str, definition: str) -> str:
         """
         Upload term to T3 and return term id.
+        If already uploaded, just return uploaded terms id.
         """
-        print("Glossary term - {}: {}".format(term, definition))
 
-        term_id = self._client.list.post(
-            site_id=self._site_id,
-            term_title=term,
-            term_text=definition,
-        )
+        def upload_content_term(term: str, definition: str):
+            print("Glossary term - {}: {}".format(term, definition))
 
-        return self._client.tmp_content_term.post(term_id)
+            term_id = self._client.list.post(
+                site_id=self._site_id,
+                term_title=term,
+                term_text=definition,
+            )
+            return self._client.tmp_content_term.post(term_id)
+
+        if term not in self._uploaded_content_terms:
+            content_term_id = upload_content_term(term, definition)
+            self._uploaded_content_terms[term] = content_term_id
+            return content_term_id
+
+        else:
+            return self._uploaded_content_terms[term]
 
     def _save_no_definition_term(self, term):
         self._no_definition_terms.append(term)
