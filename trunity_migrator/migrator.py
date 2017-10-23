@@ -38,19 +38,19 @@ class Migrator(object):
                  t2_book_title, t3_book_title,
                  html_fixer: HTMLFixer=None):
 
-        self._trunity_2_client = Trunity2Client(
+        self._t2_client = Trunity2Client(
             trunity_2_login, trunity_2_password
         )
 
-        self._trunity_3_session = initialize_session_from_creds(
+        self._t3_session = initialize_session_from_creds(
             trunity_3_login, trunity_3_password
         )
-        self._topics_client = TopicsClient(self._trunity_3_session)
-        self._contents_client = ContentsClient(self._trunity_3_session)
+        self._topics_client = TopicsClient(self._t3_session)
+        self._contents_client = ContentsClient(self._t3_session)
 
-        self._trunity_3_side_id = self._create_new_site(t3_book_title)
+        self._t3_side_id = self._create_new_site(t3_book_title)
 
-        self._trunity_2_root_topic_id, self._trunity_2_site_id = \
+        self._t2_root_topic_id, self._t2_site_id = \
             self._get_trunity_2_site_info(t2_book_title)
 
         self._queue = []
@@ -58,11 +58,11 @@ class Migrator(object):
         self._html_fixer = html_fixer
 
         self._glossary = Glossary(
-            self._trunity_3_side_id,
-            self._trunity_3_session
+            self._t3_side_id,
+            self._t3_session
         )
 
-        self._t3_terms_client = TermsClient(self._trunity_3_session)
+        self._t3_terms_client = TermsClient(self._t3_session)
 
         self._no_definition_terms = []
 
@@ -81,7 +81,7 @@ class Migrator(object):
         """
         print("Creating new book: {}".format(title), end='')
 
-        sites_client = SitesClient(self._trunity_3_session)
+        sites_client = SitesClient(self._t3_session)
         site_id = sites_client.list.post(
             name=title,
             site_type=SiteType.TEXTBOOK,
@@ -99,7 +99,7 @@ class Migrator(object):
         :param site_name:
         :return:
         """
-        sites = self._trunity_2_client.get_user_sites('All')
+        sites = self._t2_client.get_user_sites('All')
         for site in sites:
             if site['name'] == site_name:
                 return site['rootTopic'], site['siteId']
@@ -129,7 +129,7 @@ class Migrator(object):
         body = self._upload_glosarry_terms(title, body)
 
         content_id = self._contents_client.list.post(
-            site_id=self._trunity_3_side_id,
+            site_id=self._t3_side_id,
             content_title=title,
             content_type=ContentType.ARTICLE,
             text=body,
@@ -153,8 +153,8 @@ class Migrator(object):
         print('\t\t[SUCCESS!]')
 
     def _get_chapter_info(self, t2_chapter_id):
-        topic = self._trunity_2_client.get_a_topic(
-            site_id=self._trunity_2_site_id,
+        topic = self._t2_client.get_a_topic(
+            site_id=self._t2_site_id,
             topic_id=t2_chapter_id,
         )
         return topic.get('shortName', None), topic.get('description', None)
@@ -168,7 +168,7 @@ class Migrator(object):
                 description = self._html_fixer.apply(description)
 
         new_chapter_id = self._topics_client.list.post(
-            site_id=self._trunity_3_side_id,
+            site_id=self._t3_side_id,
             name=title,
             topic_id=topic_id,
             short_name=short_name,
@@ -180,8 +180,8 @@ class Migrator(object):
         return new_chapter_id
 
     def _get_topic_joins(self, topic_id):
-        return self._trunity_2_client.get_topic_joins(
-            self._trunity_2_site_id, topic_id
+        return self._t2_client.get_topic_joins(
+            self._t2_site_id, topic_id
         )
 
     @staticmethod
@@ -246,7 +246,7 @@ class Migrator(object):
                 )
 
     def migrate_book(self):
-        root_topic_joins = self._get_topic_joins(self._trunity_2_root_topic_id)
+        root_topic_joins = self._get_topic_joins(self._t2_root_topic_id)
 
         self._update_queue_by_joins(
             topic_id=None,
