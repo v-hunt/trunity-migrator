@@ -17,6 +17,25 @@ from trunity_3_client import (
 )
 
 
+CONTENT_TYPES = [  # TODO: make global settings object
+    "article",
+    "questionpool",
+    # "exam"
+    # "news",
+    # "video",
+    # "podcast",
+    # "gallery",
+    "game",
+    # "assignment",
+    # "whitepaper",
+    # "casestudy",
+    # "presentation",
+    # "lecture",
+    # "exercise",
+    # "teachingunit",
+]
+
+
 class RootTopicIdError(IOError):
     """
     Raise when can't find root topic in Trunity 2
@@ -120,8 +139,11 @@ class Migrator(object):
             del self._glossary.no_definition_terms
         return article_body
 
-    def upload_content(self, title, body, topic_id=None):
-        print("Uploading content: {}".format(title), end='')
+    def upload_article(self, join, topic_id=None):
+        title = join['title']
+        body = join['body']
+
+        print("Uploading article: {}".format(title), end='')
 
         if self._html_fixer:
             body = self._html_fixer.apply(body)
@@ -151,6 +173,26 @@ class Migrator(object):
                 print("[Warning] Trunity API can't accept temp content term!")
 
         print('\t\t[SUCCESS!]')
+
+    def upload_question_pool(self, join, topic_id=None):
+        question_pool = self._t2_client.get_content(
+            site_id=self._t2_site_id,
+            content_id=join['_id']
+        )
+        print()
+        print(question_pool)
+        print()
+
+    def upload_content(self, join, topic_id=None):
+
+        content_type = self._get_type_of_join(join)
+        print('Content type: ', content_type)
+
+        if content_type == 'article':
+            self.upload_article(join, topic_id)
+
+        elif content_type == 'questionpool':
+            self.upload_question_pool(join, topic_id)
 
     def _get_chapter_info(self, t2_chapter_id):
         topic = self._t2_client.get_a_topic(
@@ -192,7 +234,7 @@ class Migrator(object):
 
         content_type = self._get_type_of_join(join)
 
-        if content_type in settings.CONTENT_TYPES:
+        if content_type in CONTENT_TYPES:
             return True
         else:
             return False
@@ -221,8 +263,7 @@ class Migrator(object):
             if self._is_join_is_content(vertex.join):
 
                 self.upload_content(
-                    title=vertex.join['title'],
-                    body=vertex.join['body'],
+                    join=vertex.join,
                     topic_id=vertex.uploaded_topic_id
                 )
 
