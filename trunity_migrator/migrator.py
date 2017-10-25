@@ -5,12 +5,14 @@ from trunity_migrator.trunity_2_client import Client as Trunity2Client
 from trunity_migrator.fixers import *
 from trunity_migrator.html_fixer import HTMLFixer
 from trunity_migrator.glossary import Glossary
+from trunity_migrator.questionnaires.uploaders import upload_question_pool
 
 from trunity_3_client import (
     initialize_session_from_creds,
     TopicsClient,
     ContentsClient,
     ContentType,
+    ResourceType,
     SitesClient,
     SiteType,
     TermsClient,
@@ -64,10 +66,14 @@ class Migrator(object):
         self._t3_session = initialize_session_from_creds(
             trunity_3_login, trunity_3_password
         )
+        self._t3_json_session = initialize_session_from_creds(
+            trunity_3_login, trunity_3_password,
+            content_type='application/json'
+        )
         self._topics_client = TopicsClient(self._t3_session)
         self._contents_client = ContentsClient(self._t3_session)
 
-        self._t3_side_id = self._create_new_site(t3_book_title)
+        self._t3_site_id = self._create_new_site(t3_book_title)
 
         self._t2_root_topic_id, self._t2_site_id = \
             self._get_trunity_2_site_info(t2_book_title)
@@ -77,7 +83,7 @@ class Migrator(object):
         self._html_fixer = html_fixer
 
         self._glossary = Glossary(
-            self._t3_side_id,
+            self._t3_site_id,
             self._t3_session
         )
 
@@ -143,7 +149,7 @@ class Migrator(object):
         title = join['title']
         body = join['body']
 
-        print("Uploading article: {}".format(title), end='')
+        print("Uploading Article: {}".format(title), end='')
 
         if self._html_fixer:
             body = self._html_fixer.apply(body)
@@ -151,7 +157,7 @@ class Migrator(object):
         body = self._upload_glosarry_terms(title, body)
 
         content_id = self._contents_client.list.post(
-            site_id=self._t3_side_id,
+            site_id=self._t3_site_id,
             content_title=title,
             content_type=ContentType.ARTICLE,
             text=body,
@@ -175,18 +181,36 @@ class Migrator(object):
         print('\t\t[SUCCESS!]')
 
     def upload_question_pool(self, join, topic_id=None):
-        question_pool = self._t2_client.get_content(
+        title = join['title']
+        description = join['body']
+
+        print("Uploading Question Pool: {}".format(title))
+
+        t2_question_pool = self._t2_client.get_content(
             site_id=self._t2_site_id,
             content_id=join['_id']
         )
-        print()
-        print(question_pool)
-        print()
+
+        content_id = self._contents_client.list.post(
+            site_id=self._t3_site_id,
+            content_title=title,
+            content_type=ContentType.QUESTIONNAIRE,
+            text=description,
+            topic_id=topic_id,
+            resource_type=ResourceType.QUESTION_POOL,
+        )
+
+        questions = t2_question_pool['content']['questions']
+
+        upload_question_pool(
+            session=self._t3_json_session,
+            questionnaire_id=content_id,
+            t2_questions=questions
+        )
 
     def upload_content(self, join, topic_id=None):
 
         content_type = self._get_type_of_join(join)
-        print('Content type: ', content_type)
 
         if content_type == 'article':
             self.upload_article(join, topic_id)
@@ -210,7 +234,7 @@ class Migrator(object):
                 description = self._html_fixer.apply(description)
 
         new_chapter_id = self._topics_client.list.post(
-            site_id=self._t3_side_id,
+            site_id=self._t3_site_id,
             name=title,
             topic_id=topic_id,
             short_name=short_name,
