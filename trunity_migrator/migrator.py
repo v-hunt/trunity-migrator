@@ -133,7 +133,7 @@ class Migrator(object):
             "Can't retrieve Trunity 2 book info by book name!"
         )
 
-    def _upload_glosarry_terms(self, article_title, article_body):
+    def _upload_glossary_terms(self, article_title, article_body):
         article_body = self._glossary.fix_tags(html=article_body)
 
         # track glossary terms without definitions:
@@ -154,7 +154,7 @@ class Migrator(object):
         if self._html_fixer:
             body = self._html_fixer.apply(body)
 
-        body = self._upload_glosarry_terms(title, body)
+        body = self._upload_glossary_terms(title, body)
 
         content_id = self._contents_client.list.post(
             site_id=self._t3_site_id,
