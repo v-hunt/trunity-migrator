@@ -6,6 +6,7 @@ from trunity_migrator.fixers import *
 from trunity_migrator.html_fixer import HTMLFixer
 from trunity_migrator.glossary import Glossary
 from trunity_migrator.questionnaires.uploaders import upload_question_pool
+from trunity_migrator.self_assessments.uploaders import upload_self_assessment
 
 from trunity_3_client import (
     initialize_session_from_creds,
@@ -208,12 +209,48 @@ class Migrator(object):
             t2_questions=questions
         )
 
+    def upload_self_assessment(self, join, topic_id=None):
+        """
+        Check if Article has Self-Assessment and uploads it.
+        """
+        article = self._t2_client.get_content(
+            site_id=self._t2_site_id,
+            content_id=join['_id']
+        )
+
+        check_on_learning_questions = article['content']['checkOnLearning']
+
+        if check_on_learning_questions:
+            title = join['title']
+            # description = join['body']
+
+            print('SelfAssessment for "{}"'.format(title), end=': ')
+
+            # if self._html_fixer:
+            #     description = self._html_fixer.apply(description)
+
+            content_id = self._contents_client.list.post(
+                site_id=self._t3_site_id,
+                content_title=title.strip() + ' - Self Assessment',
+                content_type=ContentType.QUESTIONNAIRE,
+                text='',
+                topic_id=topic_id,
+                resource_type=ResourceType.SELF_ASSESSMENTS,  # TODO: try set to SelfAssesment
+            )
+
+            upload_self_assessment(
+                session=self._t3_json_session,
+                questionnaire_id=content_id,
+                t2_questions=check_on_learning_questions
+            )
+
     def upload_content(self, join, topic_id=None):
 
         content_type = self._get_type_of_join(join)
 
         if content_type == 'article':
             self.upload_article(join, topic_id)
+            self.upload_self_assessment(join, topic_id)
 
         elif content_type == 'questionpool':
             self.upload_question_pool(join, topic_id)
