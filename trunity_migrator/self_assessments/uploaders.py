@@ -26,7 +26,7 @@ def upload_self_assessment(session: Session, questionnaire_id, t2_questions):
             # to 'Essay' in T3:
             questionnaire.add_essay(
                 text=question.pop('question'),
-                correct_answer='',
+                correct_answer=question['questionFeedback'],
                 score=DEFAULT_SCORE
             )
 
