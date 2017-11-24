@@ -26,7 +26,7 @@ def convert_multiple_choice(t2_question: dict) -> List[Answer]:
 
 
 def convert_multiple_answer(t2_question: dict) -> List[Answer]:
-    correct_answer_indexes = map(int, t2_question['correct'])
+    correct_answer_indexes = [int(index) for index in t2_question['correct']]
     feedback = t2_question['feedback']
 
     result = []

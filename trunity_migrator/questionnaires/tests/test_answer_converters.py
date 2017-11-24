@@ -54,6 +54,34 @@ class ConvertersTestCase(TestCase):
             t3_expected_answers
         )
 
+    def test_convert_multiple_answer_2(self):
+        """
+        Additional test to fix a bug mentioned by Sam.
+
+        Due to that bug we cannot migrate sites like this: http://www.trunity.net/qp-test-ma-1/
+        """
+        t2_question = {
+            'feedback': '',
+            'type': 'multipleAnswer',
+            'questionId': 'q17e4827351f08caf98112222aae2b9c7',
+            'answers': ['Incorrect', 'Correct', 'Correct', 'Incorrect', 'Correct', 'Incorrect'],
+            'correct': ['1', '2', '4']
+        }
+
+        t3_expected_answers = [
+            Answer('Incorrect', False, 0),
+            Answer('Correct', True, 1),
+            Answer('Correct', True, 1),
+            Answer('Incorrect', False, 0),
+            Answer('Correct', True, 1),
+            Answer('Incorrect', False, 0),
+        ]
+
+        self.assertListEqual(
+            convert_multiple_answer(t2_question),
+            t3_expected_answers
+        )
+
     def test_convert_true_false(self):
         t2_question = {
             'type': 'trueFalse',
