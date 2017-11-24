@@ -218,16 +218,12 @@ class Migrator(object):
             content_id=join['_id']
         )
 
-        check_on_learning_questions = article['content']['checkOnLearning']
+        check_on_learning_questions = article['content'].get('checkOnLearning')
 
         if check_on_learning_questions:
             title = join['title']
-            # description = join['body']
 
             print('SelfAssessment for "{}"'.format(title), end=': ')
-
-            # if self._html_fixer:
-            #     description = self._html_fixer.apply(description)
 
             content_id = self._contents_client.list.post(
                 site_id=self._t3_site_id,
@@ -235,7 +231,7 @@ class Migrator(object):
                 content_type=ContentType.QUESTIONNAIRE,
                 text='',
                 topic_id=topic_id,
-                resource_type=ResourceType.SELF_ASSESSMENTS,  # TODO: try set to SelfAssesment
+                resource_type=ResourceType.SELF_ASSESSMENTS,
             )
 
             upload_self_assessment(
