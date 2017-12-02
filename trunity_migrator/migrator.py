@@ -25,7 +25,7 @@ CONTENT_TYPES = [  # TODO: make global settings object
     "questionpool",
     # "exam"
     # "news",
-    # "video",
+    "video",
     # "podcast",
     # "gallery",
     "game",
@@ -244,7 +244,8 @@ class Migrator(object):
 
         content_type = self._get_type_of_join(join)
 
-        if content_type == 'article':
+        if content_type in ['article', 'game', 'video']:
+
             self.upload_article(join, topic_id)
             self.upload_self_assessment(join, topic_id)
 
